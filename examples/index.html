@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill 推荐系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: #667eea;
+        }
+
+        .search-box button {
+            padding: 14px 28px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5a6fd6;
+        }
+
+        .search-box button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-tag {
+            padding: 6px 14px;
+            background: #f3f4f6;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-tag:hover {
+            background: #e5e7eb;
+        }
+
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #6b7280;
+        }
+
+        .skill-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .skill-card:hover {
+            transform: translateX(4px);
+        }
+
+        .skill-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .skill-desc {
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .skill-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .skill-tag {
+            padding: 4px 10px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #4b5563;
+        }
+
+        .confidence {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Skill 推荐系统</h1>
+            <p>根据你的需求，智能推荐最适合的 Agent Skills</p>
+        </div>
+
+        <div class="card">
+            <div class="api-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">API 服务状态检查中</span>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="queryInput" placeholder="请输入你的需求，例如：帮我生成一个 API 接口">
+                <button id="searchBtn" onclick="searchSkills()">搜索</button>
+            </div>
+
+            <div class="filters">
+                <span class="filter-tag active" data-filter="" onclick="setFilter('')">全部</span>
+                <span class="filter-tag" data-filter="code_generation" onclick="setFilter('code_generation')">代码生成</span>
+                <span class="filter-tag" data-filter="image_processing" onclick="setFilter('image_processing')">图片处理</span>
+                <span class="filter-tag" data-filter="data_analysis" onclick="setFilter('data_analysis')">数据分析</span>
+                <span class="filter-tag" data-filter="nlp" onclick="setFilter('nlp')">NLP</span>
+                <span class="filter-tag" data-filter="file_processing" onclick="setFilter('file_processing')">文件处理</span>
+            </div>
+
+            <div class="error" id="errorMsg"></div>
+            <div class="loading" id="loading">正在搜索...</div>
+
+            <div class="results" id="results">
+                <div class="results-header">
+                    <span id="resultsCount"></span>
+                </div>
+                <div id="resultsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+        let currentFilter = "";
+
+        async function searchSkills() {
+            const query = document.getElementById("queryInput").value.trim();
+            if (!query) {
+                return;
+            }
+
+            const searchBtn = document.getElementById("searchBtn");
+            const loading = document.getElementById("loading");
+            const results = document.getElementById("results");
+            const errorMsg = document.getElementById("errorMsg");
+
+            searchBtn.disabled = true;
+            loading.classList.add("show");
+            results.classList.remove("show");
+            errorMsg.classList.remove("show");
+
+            try {
+                const response = await fetch(`${API_BASE}/recommend`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        query,
+                        filters: currentFilter ? { category: currentFilter } : null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data.recommendations);
+            } catch (error) {
+                errorMsg.textContent = `错误: ${error.message}。请确认 API 服务正在运行（python -m skills_recommender --api）`;
+                errorMsg.classList.add("show");
+            } finally {
+                searchBtn.disabled = false;
+                loading.classList.remove("show");
+            }
+        }
+
+        function displayResults(recommendations) {
+            const results = document.getElementById("results");
+            const resultsCount = document.getElementById("resultsCount");
+            const resultsList = document.getElementById("resultsList");
+
+            if (!recommendations || recommendations.length === 0) {
+                resultsList.innerHTML = '<div class="empty">未找到匹配的技能</div>';
+            } else {
+                resultsCount.textContent = `找到 ${recommendations.length} 个推荐技能`;
+                resultsList.innerHTML = recommendations.map((rec) => `
+                    <div class="skill-card">
+                        <div class="skill-name">
+                            ${rec.name}
+                            <span class="confidence">${(rec.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="skill-desc">${rec.match_reason}</div>
+                        <div class="skill-meta">
+                            <span class="skill-tag">ID: ${rec.skill_id}</span>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            results.classList.add("show");
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll(".filter-tag").forEach((tag) => {
+                tag.classList.toggle("active", tag.dataset.filter === filter);
+            });
+        }
+
+        document.getElementById("queryInput").addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                searchSkills();
+            }
+        });
+
+        async function checkApiStatus() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+            try {
+                const response = await fetch(`${API_BASE}/skills`, {
+                    method: "GET",
+                    signal: controller.signal
+                });
+                if (response.ok) {
+                    document.getElementById("statusDot").classList.remove("offline");
+                    document.getElementById("statusText").textContent = "API 服务在线";
+                }
+            } catch {
+                document.getElementById("statusDot").classList.add("offline");
+                document.getElementById("statusText").textContent = "API 服务离线，请运行 python -m skills_recommender --api";
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        checkApiStatus();
+        setInterval(checkApiStatus, 10000);
+    </script>
+</body>
+</html>

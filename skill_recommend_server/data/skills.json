@@ -1,0 +1,741 @@
+{
+  "updated_at": "2026-04-07T17:52:05.245841",
+  "skills": [
+    {
+      "id": "hub_artifacts-builder",
+      "name": "artifacts-builder",
+      "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_brand-guidelines",
+      "name": "brand-guidelines",
+      "description": "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_canvas-design",
+      "name": "canvas-design",
+      "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_changelog-generator",
+      "name": "changelog-generator",
+      "description": "Automatically creates user-facing changelogs from git commits by analyzing commit history, categorizing changes, and transforming technical commits into clear, customer-friendly release notes. Turns hours of manual changelog writing into minutes of automated generation.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_competitive-ads-extractor",
+      "name": "competitive-ads-extractor",
+      "description": "Extracts and analyzes competitors' ads from ad libraries (Facebook, LinkedIn, etc.) to understand what messaging, problems, and creative approaches are working. Helps inspire and improve your own ad campaigns.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_connect",
+      "name": "connect",
+      "description": "Connect Claude to any app. Send emails, create issues, post messages, update databases - take real actions across Gmail, Slack, GitHub, Notion, and 1000+ services.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_connect-apps",
+      "name": "connect-apps",
+      "description": "Connect Claude to external apps like Gmail, Slack, GitHub. Use this skill when the user wants to send emails, create issues, post messages, or take actions in external services.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_content-research-writer",
+      "name": "content-research-writer",
+      "description": "Assists in writing high-quality content by conducting research, adding citations, improving hooks, iterating on outlines, and providing real-time feedback on each section. Transforms your writing process from solo effort to collaborative partnership.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_developer-growth-analysis",
+      "name": "developer-growth-analysis",
+      "description": "Analyzes your recent Claude Code chat history to identify coding patterns, development gaps, and areas for improvement, curates relevant learning resources from HackerNews, and automatically sends a personalized growth report to your Slack DMs.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_docx",
+      "name": "docx",
+      "description": "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. When Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_pdf",
+      "name": "pdf",
+      "description": "This guide covers essential PDF processing operations using Python libraries and command-line tools. For advanced features, JavaScript libraries, and detailed examples, see reference.md. If you need to fill out a PDF form, read forms.md and follow its instructions.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_pptx",
+      "name": "pptx",
+      "description": "Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other presentation tasks",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_xlsx",
+      "name": "xlsx",
+      "description": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. When Claude needs to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv, etc) for: (1) Creating new spreadsheets with formulas and formatting, (2) Reading or analyzing data, (3) Modify existing spreadsheets while preserving formulas, (4) Data analysis and visualization in spreadsheets, or (5) Recalculating formulas",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_domain-name-brainstormer",
+      "name": "domain-name-brainstormer",
+      "description": "Generates creative domain name ideas for your project and checks availability across multiple TLDs (.com, .io, .dev, .ai, etc.). Saves hours of brainstorming and manual checking.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_file-organizer",
+      "name": "file-organizer",
+      "description": "Intelligently organizes your files and folders across your computer by understanding context, finding duplicates, suggesting better structures, and automating cleanup tasks. Reduces cognitive load and keeps your digital workspace tidy without manual effort.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_image-enhancer",
+      "name": "image-enhancer",
+      "description": "Improves the quality of images, especially screenshots, by enhancing resolution, sharpness, and clarity. Perfect for preparing images for presentations, documentation, or social media posts.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_internal-comms",
+      "name": "internal-comms",
+      "description": "A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident reports, project updates, etc.).",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_invoice-organizer",
+      "name": "invoice-organizer",
+      "description": "Automatically organizes invoices and receipts for tax preparation by reading messy files, extracting key information, renaming them consistently, and sorting them into logical folders. Turns hours of manual bookkeeping into minutes of automated organization.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_langsmith-fetch",
+      "name": "langsmith-fetch",
+      "description": "Debug LangChain and LangGraph agents by fetching execution traces from LangSmith Studio. Use when debugging agent behavior, investigating errors, analyzing tool calls, checking memory operations, or examining agent performance. Automatically fetches recent traces and analyzes execution patterns. Requires langsmith-fetch CLI installed.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_lead-research-assistant",
+      "name": "lead-research-assistant",
+      "description": "Identifies high-quality leads for your product or service by analyzing your business, searching for target companies, and providing actionable contact strategies. Perfect for sales, business development, and marketing professionals.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_mcp-builder",
+      "name": "mcp-builder",
+      "description": "To create high-quality MCP (Model Context Protocol) servers that enable LLMs to effectively interact with external services, use this skill. An MCP server provides tools that allow LLMs to access external services and APIs. The quality of an MCP server is measured by how well it enables LLMs to accomplish real-world tasks using the tools provided.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_meeting-insights-analyzer",
+      "name": "meeting-insights-analyzer",
+      "description": "Analyzes meeting transcripts and recordings to uncover behavioral patterns, communication insights, and actionable feedback. Identifies when you avoid conflict, use filler words, dominate conversations, or miss opportunities to listen. Perfect for professionals seeking to improve their communication and leadership skills.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_raffle-winner-picker",
+      "name": "raffle-winner-picker",
+      "description": "Picks random winners from lists, spreadsheets, or Google Sheets for giveaways, raffles, and contests. Ensures fair, unbiased selection with transparency.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_skill-creator",
+      "name": "skill-creator",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_skill-share",
+      "name": "skill-share",
+      "description": "A skill that creates new Claude skills and automatically shares them on Slack using Rube for seamless team collaboration and skill discovery.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_slack-gif-creator",
+      "name": "slack-gif-creator",
+      "description": "Toolkit for creating animated GIFs optimized for Slack, with validators for size constraints and composable animation primitives. This skill applies when users request animated GIFs or emoji animations for Slack from descriptions like \"make me a GIF for Slack of X doing Y\".",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_tailored-resume-generator",
+      "name": "tailored-resume-generator",
+      "description": "Analyzes job descriptions and generates tailored resumes that highlight relevant experience, skills, and achievements to maximize interview chances",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_template-skill",
+      "name": "template-skill",
+      "description": "Replace with description of the skill and when Claude should use it.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_theme-factory",
+      "name": "theme-factory",
+      "description": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_twitter-algorithm-optimizer",
+      "name": "twitter-algorithm-optimizer",
+      "description": "Analyze and optimize tweets for maximum reach using Twitter's open-source algorithm insights. Rewrite and edit user tweets to improve engagement and visibility based on how the recommendation system ranks content.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_video-downloader",
+      "name": "youtube-downloader",
+      "description": "Download YouTube videos with customizable quality and format options. Use this skill when the user asks to download, save, or grab YouTube videos. Supports various quality settings (best, 1080p, 720p, 480p, 360p), multiple formats (mp4, webm, mkv), and audio-only downloads as MP3.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    },
+    {
+      "id": "hub_webapp-testing",
+      "name": "webapp-testing",
+      "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+      "enhanced_description": null,
+      "category": [
+        "skills-hub"
+      ],
+      "capabilities": [
+        "imported"
+      ],
+      "input_schema": {},
+      "output_schema": {},
+      "version": "1.0.0",
+      "dependencies": [],
+      "author": null,
+      "created_at": "2026-04-07T17:52:05.224758",
+      "updated_at": "2026-04-07T17:52:05.224758",
+      "usage_stats": {
+        "times_recommended": 0,
+        "times_selected": 0
+      }
+    }
+  ]
+}

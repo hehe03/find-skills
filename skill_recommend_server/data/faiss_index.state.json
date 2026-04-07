@@ -1,0 +1,7 @@
+{
+  "fingerprint": "1f5871210fdfac82b4ba4d9a432d25f75538647bc77492a8ab62c3dc54214e06",
+  "skills_count": 32,
+  "dimension": 768,
+  "model_path": "./models/GTE-Multilingual-Base",
+  "updated_at": "2026-04-07T17:52:08.254032"
+}

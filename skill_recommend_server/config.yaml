@@ -1,0 +1,103 @@
+app:
+  name: "Skill Recommender"
+  version: "1.0.0"
+  debug: false
+  use_llm_enrichment: false
+
+# 存储配置
+storage:
+  # JSON文件存储（用于快速查看）
+  json_settings:
+    enabled: true
+    file_path: "./data/skills.json"
+  
+  # 数据库存储（用于查询）
+  database:
+    enabled: true
+    db_type: "sqlite"
+    db_path: "./data/skills.db"
+  
+  # 向量索引存储（用于搜索）
+  vector:
+    enabled: true
+    vector_index_path: "./data/faiss_index"
+
+vector_store:
+  type: "faiss"
+  dimension: 768
+  metric: "ip"
+
+embedding:
+  provider: "GTE"
+  model_path: "./models/GTE-Multilingual-Base"
+  device: "cpu"
+  batch_size: 32
+
+llm:
+  default: "alicloud"
+  providers:
+    openai:
+      api_key: "${OPENAI_API_KEY}"
+      base_url: "https://api.openai.com/v1"
+      model: "gpt-4o"
+      temperature: 0.7
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+      model: "claude-3-5-sonnet-20241022"
+    ollama:
+      base_url: "http://localhost:11434"
+      model: "qwen2.5"
+    zhipu:
+      api_key: "${ZHIPU_API_KEY}"
+      base_url: "https://open.bigmodel.cn/api/paas/v4"
+      model: "glm-4"
+    alicloud:
+      api_key: "${DASHSCOPE_API_KEY}"
+      base_url: "https://coding.dashscope.aliyuncs.com/v1"
+      model: "glm-5"
+
+langfuse:
+  enabled: false
+  public_key: "${LANGFUSE_PUBLIC_KEY}"
+  secret_key: "${LANGFUSE_SECRET_KEY}"
+  host: "http://localhost:3000"
+
+database:
+  type: "sqlite"
+  path: "./data/skills.db"
+
+recommendation:
+  final_top_k: 5
+  enable_graph_expand: true
+  task_understanding:
+    enabled: true
+    use_llm_when_available: false
+    llm_temperature: 0.1
+    max_keywords: 8
+  recall:
+    vector:
+      enabled: true
+      top_k: 50
+      score_threshold: 0.5
+    keyword:
+      enabled: true
+      top_k: 20
+      score_threshold: 0.15
+    intent:
+      enabled: true
+      top_k: 20
+      score_threshold: 0.2
+  scoring:
+    semantic_weight: 0.7
+    keyword_weight: 0.2
+    intent_weight: 0.1
+    usage_weight: 0.0
+  rerank:
+    enable_llm_rerank: true
+    llm_top_n: 10
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "http://localhost:6000"
