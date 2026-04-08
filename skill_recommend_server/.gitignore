@@ -1,5 +1,6 @@
 .test_tmp/
 __pycache__/
+.idea/
 *.pyc
 *.pyo
 *.pyd
