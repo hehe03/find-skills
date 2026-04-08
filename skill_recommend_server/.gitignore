@@ -5,5 +5,7 @@ __pycache__/
 *.pyo
 *.pyd
 models/GTE-Multilingual-Base/
+skills-hub
+data
 .env.example
 .env
