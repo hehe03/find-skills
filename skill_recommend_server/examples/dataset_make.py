@@ -2,21 +2,40 @@ import argparse
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+import zipfile
 import yaml
+import os
+import sys
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(root_path)
+if root_path not in sys.path:
+    sys.path.append(root_path)
 
 from skills_recommender.config import settings
-from skills_recommender.llm import LLMFactory, Message
-
+from skills_recommender.llm import LLMFactory, Message, ChatResponse
+from aigc import UniAIGC
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SKILLS_HUB = PROJECT_ROOT / "skills-hub"
-DEFAULT_OUTPUT = PROJECT_ROOT / "examples" / "skill_recommend_dataset.json"
+DEFAULT_OUTPUT = PROJECT_ROOT / "examples" / "keywords_dataset.json"
 DEFAULT_MISSING = PROJECT_ROOT / "examples" / "missing_skill_md.json"
 
+def custom_generate(query):
+    llm = UniAIGC()
+    response = llm.client_qwen3_32b(query)
+    return response
+
+class CustomLLM:
+    def chat(self, messages):
+        prompt = "\n\n".join(message.content for message in messages if message.content)
+        response_text = custom_generate(prompt)
+        return ChatResponse(content=response_text, model="custom")
 
 def build_llm(provider: Optional[str] = None):
     provider_name = provider or settings.llm.default
+    if provider_name == "custom":
+        return CustomLLM()
+
     if provider_name not in settings.llm.providers:
         raise ValueError(f"Unknown LLM provider: {provider_name}")
 
@@ -48,8 +67,29 @@ def find_all_skill_md(dir_path: Path) -> List[Path]:
     return results
 
 
+def find_all_skill_md_in_zip(zip_path: Path) -> List[str]:
+    with zipfile.ZipFile(zip_path) as archive:
+        return [name for name in archive.namelist()
+                if name.endswith("SKILL.md") and not name.endswith("/SKILL.md/")
+                ]
+
+
+def read_skill_md_from_zip(zip_path: Path, member_name: str) -> str:
+    with zipfile.ZipFile(zip_path) as archive:
+        with archive.open(member_name) as file:
+            return file.read().decode("utf-8")
+
+
 def parse_skill_markdown(skill_md_path: Path) -> Optional[Dict[str, Any]]:
     content = skill_md_path.read_text(encoding="utf-8")
+    return parse_skill_markdown_content(
+        content=content,
+        folder_name=skill_md_path.parent.name,
+        source_path=str(skill_md_path),
+    )
+
+
+def parse_skill_markdown_content(content, folder_name, source_path) -> Optional[Dict[str, Any]]:
     if not content.startswith("---"):
         return None
 
@@ -63,7 +103,6 @@ def parse_skill_markdown(skill_md_path: Path) -> Optional[Dict[str, Any]]:
         metadata = {}
 
     body = parts[2].strip()
-    folder_name = skill_md_path.parent.name
     name = metadata.get("name", folder_name)
     description = metadata.get("description", "")
 
@@ -80,7 +119,7 @@ def parse_skill_markdown(skill_md_path: Path) -> Optional[Dict[str, Any]]:
         "name": name,
         "description": description,
         "body": body[:4000],
-        "source_path": str(skill_md_path),
+        "source_path": source_path,
     }
 
 
@@ -89,29 +128,46 @@ def scan_skills_hub(skills_hub_path: Path) -> tuple[List[Dict[str, Any]], List[D
     missing_skill_md: List[Dict[str, str]] = []
 
     for item in sorted(skills_hub_path.iterdir(), key=lambda path: path.name.lower()):
-        if not item.is_dir():
+        if item.is_dir():
+            skill_md_paths = find_all_skill_md(item)
+            if not skill_md_paths:
+                missing_skill_md.append(
+                    {
+                        "folder_name": item.name,
+                        "path": str(item),
+                        "reason": "SKILL.md not found",
+                    }
+                )
+                continue
+
+            for skill_md_path in skill_md_paths:
+                parsed = parse_skill_markdown(skill_md_path)
+                if parsed:
+                    valid_skills.append(parsed)
             continue
 
-        skill_md_paths = find_all_skill_md(item)
-        if not skill_md_paths:
-            missing_skill_md.append(
-                {
-                    "folder_name": item.name,
-                    "path": str(item),
-                    "reason": "SKILL.md not found",
-                }
-            )
-            continue
+        if item.is_file() and item.suffix.lower() == ".zip":
+            skill_md_members = find_all_skill_md_in_zip(item)
+            if not skill_md_members:
+                missing_skill_md.append( {
+                        "folder_name": item.stem,
+                        "path": str(item),
+                        "reason": "SKILL.md not found",
+                    })
+                continue
 
-        for skill_md_path in skill_md_paths:
-            parsed = parse_skill_markdown(skill_md_path)
-            if parsed:
-                valid_skills.append(parsed)
+            for member_name in skill_md_members:
+                folder_name = Path(member_name).parent.name or item.stem
+                content = read_skill_md_from_zip(item, member_name)
+                parsed = parse_skill_markdown_content(content, folder_name, f"{item}!/{member_name}")
+                if parsed:
+                    valid_skills.append(parsed)
 
     return valid_skills, missing_skill_md
 
 
 def generate_examples_for_skill(llm, skill: Dict[str, Any], samples_per_skill: int) -> List[Dict[str, Any]]:
+    # 2. Vary scenarios, tone, and phrasing. Include short requests (just a few words such as "我要做一个PPT" and more than 50% of samples should be in short), long requests (one or two sentences), direct commands, and conversational style.
     prompt = f"""
 You are creating an evaluation dataset for a skill recommendation system.
 
@@ -120,20 +176,23 @@ Given the following skill, generate {samples_per_skill} realistic user requests 
 Requirements:
 1. Each sample must represent a realistic user need or task request, not a formal benchmark sentence.
 2. Use Chinese as the main language. More than 80% of samples should be in Chinese.
-3. Keep a small minority of samples in English or mixed Chinese-English when natural.
-4. Vary scenarios, tone, and phrasing. Include short requests, long requests, direct commands, question style, and conversational style.
+3. the user only uses very few keywords, such as "PPT制作", "用户声音分析", "视频编辑", "代码审核".
+4、query 必须不多于6个汉字或4个英文单词
+4. Keep a small minority of samples in English or mixed Chinese-English when natural.
 5. Simulate a small amount of real-world noise, such as occasional typos, omitted punctuation, colloquial wording, or slightly incomplete context.
-6. The correct label for every sample is the provided skill_id.
-7. Make the requests specific enough that this skill is a strong match.
+6. The correct label for every sample is the skill_name.
+7. Return skill description in chinese.
 8. Return JSON only.
+
 
 JSON schema:
 [
   {{
     "query": "user request",
-    "label": "{skill["skill_id"]}",
+    "label": "{skill["name"]}",
     "reason": "short explanation",
     "sample_type": "single_skill"
+    "description (chinese)": "翻译成中文的技能描述"
   }}
 ]
 
@@ -156,15 +215,17 @@ skill_body:
     results: List[Dict[str, Any]] = []
     for item in data:
         query = str(item.get("query", "")).strip()
+        description = str(item.get("description (chinese)", "")).strip()
         if not query:
             continue
         results.append(
             {
                 "query": query,
-                "label": skill["skill_id"],
+                "label": skill["name"],
                 "reason": str(item.get("reason", "")).strip(),
                 "sample_type": str(item.get("sample_type", "single_skill")).strip() or "single_skill",
                 "skill_name": skill["name"],
+                "description": description,
                 "source_path": skill["source_path"],
             }
         )
@@ -261,20 +322,20 @@ def main() -> None:
     parser.add_argument(
         "--provider",
         type=str,
-        default=None,
+        default='custom',
         help="Optional LLM provider override.",
     )
     parser.add_argument(
         "--samples-per-skill",
         type=int,
-        default=3,
+        default=2,
         choices=[3, 4, 5],
         help="Number of labeled examples to create per skill.",
     )
     parser.add_argument(
         "--limit",
         type=int,
-        default=None,
+        default=3,
         help="Optional limit on number of skills to process.",
     )
     args = parser.parse_args()
@@ -304,20 +365,20 @@ def main() -> None:
             )
             print(f"[ERROR] {skill['skill_id']}: {exc}")
 
-    multi_skill_target = max(1, round(len(dataset) * 0.1)) if dataset else 0
-    try:
-        multi_skill_dataset = generate_multi_skill_examples(llm, skills, multi_skill_target)
-        if multi_skill_dataset:
-            print(f"[OK] generated {len(multi_skill_dataset)} multi-skill samples")
-    except Exception as exc:
-        errors.append(
-            {
-                "skill_id": "multi_skill_generation",
-                "source_path": str(args.skills_hub),
-                "error": str(exc),
-            }
-        )
-        print(f"[ERROR] multi-skill generation: {exc}")
+    # multi_skill_target = max(1, round(len(dataset) * 0.1)) if dataset else 0
+    # try:
+    #     multi_skill_dataset = generate_multi_skill_examples(llm, skills, multi_skill_target)
+    #     if multi_skill_dataset:
+    #         print(f"[OK] generated {len(multi_skill_dataset)} multi-skill samples")
+    # except Exception as exc:
+    #     errors.append(
+    #         {
+    #             "skill_id": "multi_skill_generation",
+    #             "source_path": str(args.skills_hub),
+    #             "error": str(exc),
+    #         }
+    #     )
+    #     print(f"[ERROR] multi-skill generation: {exc}")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.missing_output.parent.mkdir(parents=True, exist_ok=True)
