@@ -41,6 +41,7 @@ RETRYABLE_GENERATION_STAGES = {
     "llm_empty_response",
     "json_parse",
     "json_schema",
+    "sample_count_mismatch",
 }
 
 def custom_generate(query):
@@ -271,7 +272,9 @@ skill_body:
         )
 
     results: List[Dict[str, Any]] = []
-    for item in data:
+    for item in data[:samples_per_skill]:
+        if not isinstance(item, dict):
+            continue
         query = str(item.get("query", "")).strip()
         description = str(item.get("description (chinese)", "")).strip()
         if not query:
@@ -286,6 +289,12 @@ skill_body:
                 "description": description,
                 "source_path": skill["source_path"],
             }
+        )
+    if len(results) < samples_per_skill:
+        raise SkillGenerationError(
+            f"LLM returned {len(results)} usable samples, expected {samples_per_skill}.",
+            stage="sample_count_mismatch",
+            raw_response=content,
         )
     return results
 
