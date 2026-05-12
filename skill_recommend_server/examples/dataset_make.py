@@ -13,7 +13,6 @@ if root_path not in sys.path:
 
 from skills_recommender.config import settings
 from skills_recommender.llm import LLMFactory, Message, ChatResponse
-from aigc import UniAIGC
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SKILLS_HUB = PROJECT_ROOT / "skills-hub"
@@ -21,6 +20,8 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "examples" / "keywords_dataset.json"
 DEFAULT_MISSING = PROJECT_ROOT / "examples" / "missing_skill_md.json"
 
 def custom_generate(query):
+    from aigc import UniAIGC
+
     llm = UniAIGC()
     response = llm.client_qwen3_32b(query)
     return response
@@ -167,7 +168,6 @@ def scan_skills_hub(skills_hub_path: Path) -> tuple[List[Dict[str, Any]], List[D
 
 
 def generate_examples_for_skill(llm, skill: Dict[str, Any], samples_per_skill: int) -> List[Dict[str, Any]]:
-    # 2. Vary scenarios, tone, and phrasing. Include short requests (just a few words such as "我要做一个PPT" and more than 50% of samples should be in short), long requests (one or two sentences), direct commands, and conversational style.
     prompt = f"""
 You are creating an evaluation dataset for a skill recommendation system.
 
@@ -232,69 +232,62 @@ skill_body:
     return results
 
 
-def generate_multi_skill_examples(llm, skills: List[Dict[str, Any]], total_samples: int) -> List[Dict[str, Any]]:
-    if total_samples <= 0 or not skills:
-        return []
+def load_existing_output(output_path: Path) -> Dict[str, Any]:
+    if not output_path.exists():
+        return {}
 
-    skill_summaries = []
-    for skill in skills[:80]:
-        skill_summaries.append(
-            f'- {skill["skill_id"]} | {skill["name"]} | {skill["description"]}'
-        )
+    try:
+        return json.loads(output_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise SystemExit(f"Failed to read existing output file for resume: {output_path}: {exc}") from exc
 
-    prompt = f"""
-You are creating a hard evaluation dataset for a skill recommendation system.
 
-Generate {total_samples} realistic complex user requests that require combining multiple skills.
+def successful_source_paths(payload: Dict[str, Any]) -> set[str]:
+    return {
+        str(item.get("source_path", "")).strip()
+        for item in payload.get("dataset", [])
+        if str(item.get("source_path", "")).strip()
+    }
 
-Requirements:
-1. These are multi-skill requests, not single-skill requests.
-2. Use Chinese as the main language. More than 80% of samples should be in Chinese.
-3. Keep a small minority of samples in English or mixed Chinese-English when natural.
-4. Scenarios must be diverse, realistic, and practical.
-5. Vary phrasing styles: command, question, conversational, terse, detailed, partially specified.
-6. Simulate a small amount of real-world noise, such as occasional typos, omitted punctuation, or colloquial expressions.
-7. For each sample, provide 2-3 correct skill ids in execution order.
-8. Return JSON only.
 
-JSON schema:
-[
-  {{
-    "query": "user request",
-    "labels": ["skill_id_1", "skill_id_2"],
-    "reason": "short explanation",
-    "sample_type": "multi_skill"
-  }}
-]
+def failed_source_paths(payload: Dict[str, Any]) -> set[str]:
+    return {
+        str(item.get("source_path", "")).strip()
+        for item in payload.get("errors", [])
+        if str(item.get("source_path", "")).strip()
+    }
 
-Available skills:
-{chr(10).join(skill_summaries)}
-""".strip()
 
-    response = llm.chat([Message(role="user", content=prompt)])
-    content = response.content.strip()
-    if "```json" in content:
-        content = content.split("```json", 1)[1].split("```", 1)[0].strip()
-    elif "```" in content:
-        content = content.split("```", 1)[1].split("```", 1)[0].strip()
+def save_outputs(
+    output_path: Path,
+    missing_output_path: Path,
+    missing_skill_md: List[Dict[str, str]],
+    skills_processed: int,
+    samples_per_skill: int,
+    dataset: List[Dict[str, Any]],
+    multi_skill_dataset: List[Dict[str, Any]],
+    errors: List[Dict[str, str]],
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    missing_output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    data = json.loads(content)
-    results: List[Dict[str, Any]] = []
-    known_skill_ids = {skill["skill_id"] for skill in skills}
-    for item in data:
-        query = str(item.get("query", "")).strip()
-        labels = [str(label).strip() for label in item.get("labels", []) if str(label).strip() in known_skill_ids]
-        if not query or len(labels) < 2:
-            continue
-        results.append(
-            {
-                "query": query,
-                "labels": labels,
-                "reason": str(item.get("reason", "")).strip(),
-                "sample_type": "multi_skill",
-            }
-        )
-    return results
+    output_payload = {
+        "generated_at": __import__("datetime").datetime.now().isoformat(),
+        "skills_processed": skills_processed,
+        "samples_per_skill": samples_per_skill,
+        "multi_skill_samples": len(multi_skill_dataset),
+        "total_samples": len(dataset),
+        "dataset": dataset,
+        "multi_skill_dataset": multi_skill_dataset,
+        "errors": errors,
+    }
+    output_path.write_text(json.dumps(output_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    missing_output_path.write_text(json.dumps(missing_skill_md, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def progress_line(index: int, total: int, skill: Dict[str, Any]) -> str:
+    percent = (index / total * 100) if total else 100
+    return f"[{index}/{total} {percent:5.1f}%] {skill['skill_id']} -> {skill['name']}"
 
 
 def main() -> None:
@@ -329,7 +322,6 @@ def main() -> None:
         "--samples-per-skill",
         type=int,
         default=2,
-        choices=[3, 4, 5],
         help="Number of labeled examples to create per skill.",
     )
     parser.add_argument(
@@ -338,23 +330,72 @@ def main() -> None:
         default=3,
         help="Optional limit on number of skills to process.",
     )
+    parser.add_argument(
+        "--save-every",
+        type=int,
+        default=1,
+        help="Save partial results after every N processed skills. Use 0 to save only at the end.",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Load existing output and skip skills that already have successful samples.",
+    )
+    parser.add_argument(
+        "--retry-errors",
+        action="store_true",
+        help="When used with --resume, retry skills recorded in existing errors plus unprocessed skills.",
+    )
     args = parser.parse_args()
 
     if not args.skills_hub.exists():
         raise SystemExit(f"skills-hub path not found: {args.skills_hub}")
+    if args.save_every < 0:
+        raise SystemExit("--save-every must be greater than or equal to 0")
 
     llm = build_llm(args.provider)
     skills, missing_skill_md = scan_skills_hub(args.skills_hub)
     if args.limit is not None:
         skills = skills[: args.limit]
 
-    dataset: List[Dict[str, Any]] = []
-    multi_skill_dataset: List[Dict[str, Any]] = []
-    errors: List[Dict[str, str]] = []
+    existing_output = load_existing_output(args.output) if args.resume else {}
+    dataset: List[Dict[str, Any]] = list(existing_output.get("dataset", []))
+    multi_skill_dataset: List[Dict[str, Any]] = list(existing_output.get("multi_skill_dataset", []))
+    errors: List[Dict[str, str]] = list(existing_output.get("errors", []))
+
+    successful_paths = successful_source_paths(existing_output)
+    previous_failed_paths = failed_source_paths(existing_output)
+    retry_paths = previous_failed_paths if args.retry_errors else set()
+
+    if args.resume:
+        before_error_count = len(errors)
+        errors = [
+            error for error in errors
+            if str(error.get("source_path", "")).strip() not in retry_paths
+        ]
+        print(
+            f"[RESUME] loaded {len(dataset)} samples, "
+            f"{len(successful_paths)} successful skills, "
+            f"{before_error_count} previous errors"
+        )
+
+    skills_to_process = []
     for skill in skills:
+        source_path = skill["source_path"]
+        if args.resume and source_path in successful_paths and source_path not in retry_paths:
+            continue
+        if args.resume and source_path in previous_failed_paths and source_path not in retry_paths:
+            continue
+        skills_to_process.append(skill)
+
+    total_to_process = len(skills_to_process)
+    print(f"[START] skills to process: {total_to_process} / scanned: {len(skills)}")
+
+    for index, skill in enumerate(skills_to_process, start=1):
         try:
+            print(f"{progress_line(index, total_to_process, skill)} [RUN]")
             dataset.extend(generate_examples_for_skill(llm, skill, args.samples_per_skill))
-            print(f"[OK] {skill['skill_id']} -> {skill['name']}")
+            print(f"{progress_line(index, total_to_process, skill)} [OK]")
         except Exception as exc:
             errors.append(
                 {
@@ -363,38 +404,31 @@ def main() -> None:
                     "error": str(exc),
                 }
             )
-            print(f"[ERROR] {skill['skill_id']}: {exc}")
+            print(f"{progress_line(index, total_to_process, skill)} [ERROR] {exc}")
 
-    # multi_skill_target = max(1, round(len(dataset) * 0.1)) if dataset else 0
-    # try:
-    #     multi_skill_dataset = generate_multi_skill_examples(llm, skills, multi_skill_target)
-    #     if multi_skill_dataset:
-    #         print(f"[OK] generated {len(multi_skill_dataset)} multi-skill samples")
-    # except Exception as exc:
-    #     errors.append(
-    #         {
-    #             "skill_id": "multi_skill_generation",
-    #             "source_path": str(args.skills_hub),
-    #             "error": str(exc),
-    #         }
-    #     )
-    #     print(f"[ERROR] multi-skill generation: {exc}")
+        if args.save_every and index % args.save_every == 0:
+            save_outputs(
+                args.output,
+                args.missing_output,
+                missing_skill_md,
+                len(skills),
+                args.samples_per_skill,
+                dataset,
+                multi_skill_dataset,
+                errors,
+            )
+            print(f"[SAVE] checkpoint saved after {index}/{total_to_process} processed skills")
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.missing_output.parent.mkdir(parents=True, exist_ok=True)
-
-    output_payload = {
-        "generated_at": __import__("datetime").datetime.now().isoformat(),
-        "skills_processed": len(skills),
-        "samples_per_skill": args.samples_per_skill,
-        "multi_skill_samples": len(multi_skill_dataset),
-        "total_samples": len(dataset),
-        "dataset": dataset,
-        "multi_skill_dataset": multi_skill_dataset,
-        "errors": errors,
-    }
-    args.output.write_text(json.dumps(output_payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    args.missing_output.write_text(json.dumps(missing_skill_md, ensure_ascii=False, indent=2), encoding="utf-8")
+    save_outputs(
+        args.output,
+        args.missing_output,
+        missing_skill_md,
+        len(skills),
+        args.samples_per_skill,
+        dataset,
+        multi_skill_dataset,
+        errors,
+    )
 
     print(f"\nDataset saved to: {args.output}")
     print(f"Missing SKILL.md records saved to: {args.missing_output}")
