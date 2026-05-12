@@ -34,6 +34,14 @@ class SkillGenerationError(RuntimeError):
         self.stage = stage
         self.raw_response = raw_response
         self.original_error = original_error
+        self.retry_history: List[Dict[str, str]] = []
+
+
+RETRYABLE_GENERATION_STAGES = {
+    "llm_empty_response",
+    "json_parse",
+    "json_schema",
+}
 
 def custom_generate(query):
     from aigc import UniAIGC
@@ -282,6 +290,38 @@ skill_body:
     return results
 
 
+def generate_examples_with_retries(
+    llm,
+    skill: Dict[str, Any],
+    samples_per_skill: int,
+    llm_retries: int,
+) -> List[Dict[str, Any]]:
+    retry_history: List[Dict[str, str]] = []
+    max_attempts = llm_retries + 1
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return generate_examples_for_skill(llm, skill, samples_per_skill)
+        except SkillGenerationError as exc:
+            retry_history.append(
+                {
+                    "attempt": str(attempt),
+                    "stage": exc.stage,
+                    "error": str(exc),
+                    "raw_response_preview": str(exc.raw_response)[:300],
+                }
+            )
+            if exc.stage not in RETRYABLE_GENERATION_STAGES or attempt >= max_attempts:
+                exc.retry_history = retry_history
+                raise
+            print(
+                f"[RETRY] {skill['skill_id']} attempt {attempt}/{max_attempts} "
+                f"failed at {exc.stage}: {exc}. Retrying..."
+            )
+
+    raise RuntimeError("Retry loop exited unexpectedly")
+
+
 def load_existing_output(output_path: Path) -> Dict[str, Any]:
     if not output_path.exists():
         return {}
@@ -370,6 +410,10 @@ def format_error_record(skill: Dict[str, Any], exc: Exception) -> Dict[str, str]
         record["raw_response_empty"] = str(not bool(raw_response_text)).lower()
     if raw_response_text:
         record["raw_response_preview"] = raw_response_text[:1000]
+    retry_history = getattr(exc, "retry_history", [])
+    if retry_history:
+        record["retry_attempts"] = str(len(retry_history))
+        record["retry_history"] = json.dumps(retry_history, ensure_ascii=False)
     return record
 
 
@@ -420,6 +464,12 @@ def main() -> None:
         help="Save partial results after every N processed skills. Use 0 to save only at the end.",
     )
     parser.add_argument(
+        "--llm-retries",
+        type=int,
+        default=0,
+        help="Retry count for LLM output errors such as empty response or invalid JSON.",
+    )
+    parser.add_argument(
         "--resume",
         action="store_true",
         help="Load existing output and skip skills that already have successful samples.",
@@ -435,6 +485,8 @@ def main() -> None:
         raise SystemExit(f"skills-hub path not found: {args.skills_hub}")
     if args.save_every < 0:
         raise SystemExit("--save-every must be greater than or equal to 0")
+    if args.llm_retries < 0:
+        raise SystemExit("--llm-retries must be greater than or equal to 0")
 
     llm = build_llm(args.provider)
     skills, missing_skill_md = scan_skills_hub(args.skills_hub)
@@ -477,7 +529,14 @@ def main() -> None:
     for index, skill in enumerate(skills_to_process, start=1):
         try:
             print(f"{progress_line(index, total_to_process, skill)} [RUN]")
-            dataset.extend(generate_examples_for_skill(llm, skill, args.samples_per_skill))
+            dataset.extend(
+                generate_examples_with_retries(
+                    llm,
+                    skill,
+                    args.samples_per_skill,
+                    args.llm_retries,
+                )
+            )
             print(f"{progress_line(index, total_to_process, skill)} [OK]")
         except Exception as exc:
             error_record = format_error_record(skill, exc)
