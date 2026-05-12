@@ -1,5 +1,6 @@
 import argparse
 import json
+import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import zipfile
@@ -18,6 +19,21 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SKILLS_HUB = PROJECT_ROOT / "skills-hub"
 DEFAULT_OUTPUT = PROJECT_ROOT / "examples" / "keywords_dataset.json"
 DEFAULT_MISSING = PROJECT_ROOT / "examples" / "missing_skill_md.json"
+
+
+class SkillGenerationError(RuntimeError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        stage: str,
+        raw_response: str = "",
+        original_error: Optional[Exception] = None,
+    ):
+        super().__init__(message)
+        self.stage = stage
+        self.raw_response = raw_response
+        self.original_error = original_error
 
 def custom_generate(query):
     from aigc import UniAIGC
@@ -204,14 +220,48 @@ skill_body:
 {skill["body"]}
 """.strip()
 
-    response = llm.chat([Message(role="user", content=prompt)])
-    content = response.content.strip()
+    try:
+        response = llm.chat([Message(role="user", content=prompt)])
+    except Exception as exc:
+        raise SkillGenerationError(
+            f"LLM request failed: {exc}",
+            stage="llm_request",
+            original_error=exc,
+        ) from exc
+
+    raw_content = getattr(response, "content", "")
+    if raw_content is None:
+        raw_content = ""
+    content = str(raw_content).strip()
+    if not content:
+        raise SkillGenerationError(
+            "LLM returned empty content; JSON parsing was not attempted.",
+            stage="llm_empty_response",
+            raw_response=str(raw_content),
+        )
+
     if "```json" in content:
         content = content.split("```json", 1)[1].split("```", 1)[0].strip()
     elif "```" in content:
         content = content.split("```", 1)[1].split("```", 1)[0].strip()
 
-    data = json.loads(content)
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise SkillGenerationError(
+            f"LLM response is not valid JSON: {exc}",
+            stage="json_parse",
+            raw_response=content,
+            original_error=exc,
+        ) from exc
+
+    if not isinstance(data, list):
+        raise SkillGenerationError(
+            f"LLM JSON root must be a list, got {type(data).__name__}.",
+            stage="json_schema",
+            raw_response=content,
+        )
+
     results: List[Dict[str, Any]] = []
     for item in data:
         query = str(item.get("query", "")).strip()
@@ -288,6 +338,39 @@ def save_outputs(
 def progress_line(index: int, total: int, skill: Dict[str, Any]) -> str:
     percent = (index / total * 100) if total else 100
     return f"[{index}/{total} {percent:5.1f}%] {skill['skill_id']} -> {skill['name']}"
+
+
+def format_error_record(skill: Dict[str, Any], exc: Exception) -> Dict[str, str]:
+    traceback_summary = traceback.extract_tb(exc.__traceback__)
+    last_frame = traceback_summary[-1] if traceback_summary else None
+    root_exc = exc
+    while root_exc.__cause__ is not None:
+        root_exc = root_exc.__cause__
+
+    has_raw_response = hasattr(exc, "raw_response")
+    raw_response = getattr(exc, "raw_response", "")
+    raw_response_text = str(raw_response)
+    record = {
+        "skill_id": skill["skill_id"],
+        "source_path": skill["source_path"],
+        "stage": getattr(exc, "stage", "unknown"),
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+        "root_error_type": type(root_exc).__name__,
+        "root_error": str(root_exc),
+        "code_location": (
+            f"{last_frame.filename}:{last_frame.lineno} in {last_frame.name}"
+            if last_frame else ""
+        ),
+        "traceback": "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)),
+    }
+
+    if has_raw_response:
+        record["raw_response_length"] = str(len(raw_response_text))
+        record["raw_response_empty"] = str(not bool(raw_response_text)).lower()
+    if raw_response_text:
+        record["raw_response_preview"] = raw_response_text[:1000]
+    return record
 
 
 def main() -> None:
@@ -397,14 +480,13 @@ def main() -> None:
             dataset.extend(generate_examples_for_skill(llm, skill, args.samples_per_skill))
             print(f"{progress_line(index, total_to_process, skill)} [OK]")
         except Exception as exc:
-            errors.append(
-                {
-                    "skill_id": skill["skill_id"],
-                    "source_path": skill["source_path"],
-                    "error": str(exc),
-                }
+            error_record = format_error_record(skill, exc)
+            errors.append(error_record)
+            print(
+                f"{progress_line(index, total_to_process, skill)} "
+                f"[ERROR] {error_record['stage']} {error_record['root_error_type']}: "
+                f"{error_record['root_error']}"
             )
-            print(f"{progress_line(index, total_to_process, skill)} [ERROR] {exc}")
 
         if args.save_every and index % args.save_every == 0:
             save_outputs(
